@@ -68,9 +68,7 @@ void turnTo(double rate) {
 }
 
 int getCenter() {
-  // TODO: READ from levelPin
-  //return map(analogRead(levelPin), 0, 1023, 0, 179);
-  return 90;
+  return map(analogRead(levelPin), 0, 1023, 0, 179);
 }
 
 int getTurnOffset() {
