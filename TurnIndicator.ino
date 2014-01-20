@@ -17,11 +17,18 @@ const int turnPin = A1; // Analog
 
 Servo turnIndicator;
 
-String inputString = "";         // a string to hold incoming data
-boolean stringComplete = false;  // whether the string is complete
-boolean inop = false; // should instrument indicate failure
+String inputString = ""; // a string to hold incoming data
+boolean stringComplete = false; // whether the string is complete
+boolean inop = true; // should instrument indicate failure
 double turn = 0.0; // the rate of turn value
 
+/*
+ * Setup
+ * Initial our LED as output
+ * Create our servo controller
+ * Run the test routine
+ * Start our serial communication
+ */
 void setup() {
   pinMode(failurePin, OUTPUT);
   turnIndicator.attach(servoPin);
@@ -32,6 +39,13 @@ void setup() {
   Serial.begin(9600);
 }
 
+/*
+ * Main Loop
+ * Check if we have a new string to parse then update our
+ * outputs accordingly. Updating on each loop allows for
+ * the trim pots to be adjusted and see the results
+ * immediately.
+ */
 void loop() {
   if (stringComplete) {
     parseInput();
@@ -58,23 +72,45 @@ void test() {
   }
 }
 
+/*
+ * Activate or deactivate the failure indicator
+ * In this case it is an led
+ */
 void setFailure(bool enable) {
   digitalWrite(failurePin, (enable ? HIGH : LOW));
 }
 
+/*
+ * Given a rate of turn with 0 being no turn and 1.0 and -1.0 being
+ * a standard rate turn to the right and left respectively, calculate
+ * the angle to set the servo motor to.
+ */
 void turnTo(double rate) {
   int angle = getCenter() - (getTurnOffset() * rate);
   turnIndicator.write(constrain(angle, 0, 179));
 }
 
+/*
+ * Determine the center position for the servo by reading the trim pot
+ */
 int getCenter() {
   return map(analogRead(levelPin), 0, 1023, 0, 179);
 }
 
+/*
+ * Determine the angle of a standard rate turn by reading the trim pot
+ */
 int getTurnOffset() {
   return map(analogRead(turnPin), 0, 1023, 0, 89);
 }
 
+/*
+ * Parse the serial input string and set the values we need.
+ * The input string is determined by the arduinofgturnindicator.xml
+ * file. The expected format is: %0.3d,%d\n
+ * with the first parameter the rate of turn
+ * and the second a bool 0 or 1 if the indicator is functioning
+ */
 void parseInput() {
   inop = false;
   turn = 0.0;
@@ -90,6 +126,10 @@ void parseInput() {
   }
 }
 
+/*
+ * This function is called when serial data is available in between calls to loop.
+ * This keeps us from having to have this functionality in the loop function.
+ */
 void serialEvent() {
   while (Serial.available()) {
     // get the new byte:
