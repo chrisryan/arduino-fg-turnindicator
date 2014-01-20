@@ -35,13 +35,13 @@ void setup() {
 void loop() {
   if (stringComplete) {
     parseInput();
-    setFailure(inop);
-    turnTo(turn);
-
     // clear the string:
     inputString = "";
     stringComplete = false;
   }
+
+  setFailure(inop);
+  turnTo(turn);
 }
 
 /*
